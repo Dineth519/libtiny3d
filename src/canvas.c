@@ -15,7 +15,7 @@ canvas_t *canvas_create(int width, int height) {
         canvas->pixels[y] = calloc(width, sizeof(float));
     }
 
-    return canvas;        // Return the created canvas
+    return canvas;       // Return the created canvas
 }
 
 
