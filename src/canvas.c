@@ -78,7 +78,7 @@ void set_pixel_f(canvas_t *canvas, float x, float y, float intensity) {
 
 // Draw a smooth line using DDA (Digital Differential Analyzer) algorithm
 void draw_line_f(canvas_t *canvas, float x0, float y0, float x1, float y1, float thickness) {
-    int steps;
+    
 
     // Calculate the distance
     float dx = x1 - x0;
@@ -91,14 +91,13 @@ void draw_line_f(canvas_t *canvas, float x0, float y0, float x1, float y1, float
         return;
     }    
 
-    // Choose the greater distance (dx or dy) as number of the steps
-    if (dx > dy) {
-        steps = dx;
-    } else {
-        steps = dy;
-    }
+    // Calculate the number of steps needed to draw the line smoothly
+    // Compare the absolute difference in x (dx) and y (dy) to determine the dominant axis
+    // The line will be sampled more times along the axis with the greater distance
+    int steps = (fabsf(dx) > fabsf(dy)) ? (int)fabsf(dx) : (int)fabsf(dy);
 
-    // Prevent division by zero
+    // If steps is zero (which can happen if start and end points are the same),
+    // set steps to 1 to avoid division by zero errors and to ensure at least one point is drawn
     if (steps == 0) {
         steps = 1;
     }
@@ -123,4 +122,20 @@ void draw_line_f(canvas_t *canvas, float x0, float y0, float x1, float y1, float
             }
         }
     }
+}
+
+
+// Save as PGM (for demo)
+void canvas_save_pgm(canvas_t *canvas, const char *filename) {
+    FILE *f = fopen(filename, "w");
+    if (!f) return;
+    fprintf(f, "P2\n%d %d\n255\n", canvas->width, canvas->height);
+    for (int y = 0; y < canvas->height; ++y) {
+        for (int x = 0; x < canvas->width; ++x) {
+            int v = (int)(clamp(canvas->pixels[y][x]) * 255.0f);
+            fprintf(f, "%d ", v);
+        }
+        fprintf(f, "\n");
+    }
+    fclose(f);
 }

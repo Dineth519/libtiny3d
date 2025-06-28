@@ -29,5 +29,13 @@ int main() {
         draw_line_f(canvas, cx, cy, x1, y1, 4.0f); // thickness = 4.0
     }
 
+    // Save the canvas to a PGM file
+    canvas_save_pgm(canvas, "clockface.pgm");
+
+    // Free the memory used by the canvas
+    canvas_destroy(canvas);
+
+    printf("Saved clockface.pgm\n");
+ 
     return 0;
 }

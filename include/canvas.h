@@ -19,4 +19,7 @@ void set_pixel_f(canvas_t *canvas, float x, float y, float intensity);
 // Uses DDA algorithm to draw a smooth line from (x0,y0) to (x1,y1) with given thickness
 void draw_line_f(canvas_t *canvas, float x0, float y0, float x1, float y1, float thickness);
 
+// Save the canvas to a PGM file
+void canvas_save_pgm(canvas_t *canvas, const char *filename);
+
 #endif
