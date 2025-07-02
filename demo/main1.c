@@ -35,8 +35,7 @@ void generate_soccer_ball(object3d_t *obj) {
         {0, -1, t}, {0, 1, t}, {0, -1, -t}, {0, 1, -t},
         {t, 0, -1}, {t, 0, 1}, {-t, 0, -1}, {-t, 0, 1}
     };
-    float scale = 20.5f;
-    for(int i=0; i<12; ++i) ico_verts[i] = vec3_scale(vec3_normalize_fast(ico_verts[i]), scale);
+    for(int i=0; i<12; ++i) ico_verts[i] = vec3_normalize_fast(ico_verts[i]);
     
     vec3 temp_vertices[60];
     int vertex_count = 0;
@@ -118,7 +117,7 @@ int main() {
 
         // Save frame to file
         char filename[64];
-        snprintf(filename, sizeof(filename), "build/frame_%03d.pgm", frame);
+        snprintf(filename, sizeof(filename), "frame_%03d.pgm", frame); // Save in current folder
         canvas_save_pgm(canvas, filename);
 
         printf("Saved frame %d/%d\n", frame + 1, NUM_FRAMES);
@@ -129,7 +128,7 @@ int main() {
     free(soccer_ball.indices);
     canvas_destroy(canvas);
 
-    printf("Done. Rendered frames can be found in the 'build' directory.\n");
+    printf("Done. Rendered frames can be found in the current directory.\n");
 
     return 0;
 }
