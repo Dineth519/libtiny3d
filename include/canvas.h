@@ -1,6 +1,8 @@
 #ifndef CANVAS_H
 #define CANVAS_H
 
+#include <stdbool.h>
+
 typedef struct {
     int width;                // canvas width in pixels
     int height;               // canvas height in pixels
@@ -12,6 +14,9 @@ canvas_t *canvas_create(int width, int height);
 
 // Free the memory used by the canvas
 void canvas_destroy(canvas_t *canvas);
+
+// Clear the canvas to black (0.0 intensity)
+void canvas_clear(canvas_t *canvas);
 
 // Intensity is spread to 4 nearest pixels using bilinear filtering
 void set_pixel_f(canvas_t *canvas, float x, float y, float intensity);

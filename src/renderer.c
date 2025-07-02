@@ -1,27 +1,23 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <stdbool.h>
 #include "renderer.h"
 #include "canvas.h"
 #include "math3d.h"
 
+
 // Projects a 3D point (vertex) from local space to screen space.
-// Applies Local -> World -> Camera -> Projection -> Screen transformations.
 vec3 project_vertex(vec3 vertex, mat4 model_matrix, mat4 view_matrix, mat4 projection_matrix, int canvas_width, int canvas_height) {
-    // 1. Local to World (Model Matrix)
+    
+    // Combine model and view matrices to transform to camera space
     mat4 model_view_matrix = mat4_mul(view_matrix, model_matrix);
     vec3 world_vertex = mat4_mul_vec3(model_view_matrix, vertex);
 
-    // 2. World to Camera (View Matrix is already incorporated)
-    // The result of mat4_mul_vec3 on model_view_matrix gives the vertex in camera space.
+    // Apply projection transformation (perspective or orthographic)
+    vec3 projected_vertex = mat4_mul_vec3(projection_matrix, world_vertex);    // Now in clip space
 
-    // 3. Camera to Projection (Projection Matrix)
-    vec3 projected_vertex = mat4_mul_vec3(projection_matrix, world_vertex);
-
-    // 4. Normalized Device Coordinates (NDC) to Screen Coordinates
-    // Assuming projected_vertex is already divided by 'w' in mat4_mul_vec3,
-    // its components (x, y, z) are in NDC space, ranging from -1 to 1.
-
+    // Convert to screen space (Normalized Device Coordinates → screen pixels)
     vec3 screen_vertex;
     screen_vertex.x = (projected_vertex.x + 1.0f) * 0.5f * canvas_width;
     screen_vertex.y = (1.0f - projected_vertex.y) * 0.5f * canvas_height; // Invert Y-axis for screen coordinates (Y-down)
@@ -33,12 +29,14 @@ vec3 project_vertex(vec3 vertex, mat4 model_matrix, mat4 view_matrix, mat4 proje
     return screen_vertex;
 }
 
+
 // Structure to hold line data for depth sorting
 typedef struct {
     vec3 start_screen;
     vec3 end_screen;
     float average_z; // Average Z of the two projected vertices for sorting
 } render_line_t;
+
 
 // Comparison function for qsort to sort lines by average Z (back to front)
 int compare_render_lines(const void *a, const void *b) {
@@ -52,6 +50,15 @@ int compare_render_lines(const void *a, const void *b) {
     } else {
         return 0;  // same depth
     }
+}
+
+
+// Checks whether a point lies inside a circular viewpor
+bool clip_to_circular_viewport(canvas_t *canvas, float x, float y) {
+    float cx = canvas->width / 2.0f;
+    float cy = canvas->height / 2.0f;
+    float r = (canvas->width < canvas->height ? canvas->width : canvas->height) / 2.0f;
+    return ((x - cx)*(x - cx) + (y - cy)*(y - cy)) < (r * r);
 }
 
 
@@ -82,9 +89,11 @@ void render_wireframe(canvas_t *canvas, object3d_t *object, mat4 model_matrix, m
             continue;
         }
 
+        // Get the vertex positions in object space
         vec3 v0_object = object->vertices[v_idx0];
         vec3 v1_object = object->vertices[v_idx1];
 
+        // Project them to screen space
         vec3 p0_screen = project_vertex(v0_object, model_matrix, view_matrix, projection_matrix, canvas->width, canvas->height);
         vec3 p1_screen = project_vertex(v1_object, model_matrix, view_matrix, projection_matrix, canvas->width, canvas->height);
 
@@ -135,4 +144,3 @@ void render_object_as_points(canvas_t *canvas, object3d_t *object, mat4 model_ma
         draw_line_f(canvas, p_screen.x, p_screen.y, p_screen.x, p_screen.y, point_size);
     }
 }
-

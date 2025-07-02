@@ -3,6 +3,7 @@
 
 #include "canvas.h"
 #include "math3d.h"
+#include <stdbool.h>
 
 // Structure to represent a 3D object for wireframe rendering
 typedef struct {
@@ -34,6 +35,21 @@ void render_wireframe(canvas_t *canvas, object3d_t *object, mat4 model_matrix, m
  * @param projection_matrix The projection (camera to clip) transformation matrix.
  * @param point_size The size of each point in pixels.
  */
+
 void render_object_as_points(canvas_t *canvas, object3d_t *object, mat4 model_matrix, mat4 view_matrix, mat4 projection_matrix, float point_size);
+
+
+/**
+ * @brief Checks if a screen-space point lies within a circular viewport.
+ *
+ * Useful for masking rendering to a circular region of the canvas.
+ *
+ * @param canvas The rendering canvas.
+ * @param x X coordinate of the point in pixels.
+ * @param y Y coordinate of the point in pixels.
+ * @return true if the point lies within the circular viewport; false otherwise.
+ */
+
+bool clip_to_circular_viewport(canvas_t *canvas, float x, float y);
 
 #endif // RENDERER_H

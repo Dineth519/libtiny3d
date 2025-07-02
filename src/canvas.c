@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 #include <math.h>
 #include "canvas.h"
@@ -28,6 +29,17 @@ void canvas_destroy(canvas_t *canvas) {
     free(canvas);
 }
 
+
+// Clears the canvas by setting all pixel values to zero
+void canvas_clear(canvas_t *canvas) {
+    if (!canvas) return;     // Return early if the canvas pointer is NULL
+
+     // Loop through each row of the canvas
+    for (int y = 0; y < canvas->height; ++y) {
+        // Set all pixels in the current row to 0 (clears intensity)
+        memset(canvas->pixels[y], 0, canvas->width * sizeof(float));
+    }
+}
 
 // Clamp value between 0.0 and 1.0
 static float clamp(float x) {
@@ -79,7 +91,6 @@ void set_pixel_f(canvas_t *canvas, float x, float y, float intensity) {
 // Draw a smooth line using DDA (Digital Differential Analyzer) algorithm
 void draw_line_f(canvas_t *canvas, float x0, float y0, float x1, float y1, float thickness) {
     
-
     // Calculate the distance
     float dx = x1 - x0;
     float dy = y1 - y0;

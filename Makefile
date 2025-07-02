@@ -1,19 +1,39 @@
+# =====================================================
 # Compiler and flags
+# =====================================================
 CC = gcc
 CFLAGS = -Wall -Iinclude
 LDFLAGS = -lm
 
+# =====================================================
+# Folders
+# =====================================================
+SRC_DIR = src
+DEMO_DIR = demo
+
+# =====================================================
 # Source files
-SRC = demo/main.c src/canvas.c
+# =====================================================
+# Change 'main_file' to the main program you want to compile
+MAIN_FILE = combined_main.c
 
-# Output
-TARGET = mydemo
+SRCS = $(SRC_DIR)/canvas.c \
+       $(SRC_DIR)/math3d.c \
+       $(SRC_DIR)/renderer.c \
+       $(DEMO_DIR)/$(MAIN_FILE)
 
-# Rules
+# =====================================================
+# Output binary
+# =====================================================
+TARGET = demo_combined
+
+# =====================================================
+# Build rules
+# =====================================================
 all: $(TARGET)
 
-$(TARGET): $(SRC)
-	$(CC) $(CFLAGS) -o $(TARGET) $(SRC) $(LDFLAGS)
+$(TARGET): $(SRCS)
+	$(CC) $(CFLAGS) -o $(TARGET) $(SRCS) $(LDFLAGS)
 
 clean:
 	rm -f $(TARGET)
