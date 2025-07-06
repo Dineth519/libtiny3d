@@ -1,50 +1,93 @@
-// ***************************************************************************
-// * This demo applies transform to a cube and prints the projected vertices *
-// ***************************************************************************
-
-
 #include <stdio.h>
-#include "math3d.h"
+#include <math.h>
+#include "tiny3d.h"
 
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 
 int main() {
+    printf("=== Testing math3d ===\n");
 
-    // Define 8 vertices of a cube (in object/local space)
-    vec3 cube_vertices[8] = {
-        {-1,-1,-1}, {1,-1,-1}, {1,1,-1}, {-1,1,-1},       // Back face
-        {-1,-1,1},  {1,-1,1},  {1,1,1},  {-1,1,1},        // Front face
+    // ===========================================
+    // Test 1: Spherical to Cartesian conversion
+    // ===========================================
+    vec3 v = vec3_from_spherical(1.0f, M_PI/4, M_PI/4);
+    printf("vec3_from_spherical(1, 45°,45°): (%.3f, %.3f, %.3f)\n", v.x, v.y, v.z);
+
+    // ===========================================
+    // Test 2: Normalization
+    // ===========================================
+    vec3 v2 = vec3_from_cartesian(3, 4, 0);
+    vec3 n = vec3_normalize(v2);
+    printf("normalize(3,4,0): (%.3f, %.3f, %.3f) len=%.3f\n",
+           n.x, n.y, n.z, vec3_length(n));
+
+    // ===========================================
+    // Test 3: Dot product
+    // ===========================================
+    float d = vec3_dot(v2, vec3_from_cartesian(1,0,0));
+    printf("dot((3,4,0),(1,0,0)) = %.3f\n", d);
+
+    // ===========================================
+    // Test 4: Cross product
+    // ===========================================
+    vec3 c = vec3_cross(vec3_from_cartesian(1,0,0), vec3_from_cartesian(0,1,0));
+    printf("cross((1,0,0),(0,1,0)) = (%.3f, %.3f, %.3f)\n", c.x, c.y, c.z);
+
+    // ===========================================
+    // Test 5: Matrix translate * vector
+    // ===========================================
+    mat4 t = mat4_translate(1,2,3);
+    vec4 p = vec4_from_vec3(vec3_from_cartesian(1,1,1), 1);
+    vec4 pt = mat4_mul_vec4(t, p);
+    printf("translate(1,2,3)*(1,1,1,1) = (%.3f, %.3f, %.3f, %.3f)\n",
+           pt.x, pt.y, pt.z, pt.w);
+
+    // ===========================================
+    // Test 6: Rotation matrix
+    // ===========================================
+    mat4 rx = mat4_rotate_x(M_PI/2);
+    vec4 prx = mat4_mul_vec4(rx, p);
+    printf("rotate_x(90°)*(1,1,1,1) = (%.3f, %.3f, %.3f, %.3f)\n",
+           prx.x, prx.y, prx.z, prx.w);
+
+    // ===========================================
+    // Test 7: Manual cube transform & projection
+    // ===========================================
+    printf("\n=== Testing cube transform ===\n");
+
+    // -------------------------------------------
+    // 8 vertices of a unit cube centered at origin
+    // -------------------------------------------
+    vec3 cube[8] = {
+        vec3_from_cartesian(-1,-1,-1),
+        vec3_from_cartesian( 1,-1,-1),
+        vec3_from_cartesian( 1, 1,-1),
+        vec3_from_cartesian(-1, 1,-1),
+        vec3_from_cartesian(-1,-1, 1),
+        vec3_from_cartesian( 1,-1, 1),
+        vec3_from_cartesian( 1, 1, 1),
+        vec3_from_cartesian(-1, 1, 1)
     };
 
-    // Model matrix: move the cube 5 units into the screen (along -Z)
-    mat4 model = mat4_translate(0, 0, -5);
+    // Build Model-View-Projection matrix
+    mat4 model = mat4_rotate_xyz(0.5, 0.5, 0);
+    mat4 view = mat4_translate(0,0,-5);
+    mat4 proj = mat4_perspective(-1,1,-1,1,1,10);
 
-    // View matrix: identity (no camera transform)
-    mat4 view = mat4_identity();
-
-    // Projection matrix: simple perspective projection
-    mat4 proj = mat4_perspective(-1, 1, -1, 1, 1, 10);
-
-    // Combine the transforms into a single MVP matrix
+    // Full MVP
     mat4 mvp = mat4_mul(proj, mat4_mul(view, model));
 
-    // Apply transformation and projection to each vertex
-    for (int i = 0; i < 8; ++i) {
-        vec3 v = cube_vertices[i];
-        float x = v.x, y = v.y, z = v.z;
+    // -------------------------------------------
+    // Project each cube vertex and print
+    // -------------------------------------------
+    for (int i = 0; i < 8; i++) {
+        vec4 p = vec4_from_vec3(cube[i], 1.0f);
+        vec4 projected = mat4_mul_vec4(mvp, p);
 
-        // Multiply vector by matrix manually
-        float px = mvp.m[0]*x + mvp.m[4]*y + mvp.m[8]*z + mvp.m[12];
-        float py = mvp.m[1]*x + mvp.m[5]*y + mvp.m[9]*z + mvp.m[13];
-        float pz = mvp.m[2]*x + mvp.m[6]*y + mvp.m[10]*z + mvp.m[14];
-        float pw = mvp.m[3]*x + mvp.m[7]*y + mvp.m[11]*z + mvp.m[15];
-
-        // Perspective division (convert to normalized device coordinates)
-        px /= pw;
-        py /= pw;
-        pz /= pw;
-
-        // Print the projected 3D point (in NDC space)
-        printf("Projected Vertex %d: (%f, %f, %f)\n", i, px, py, pz);
+        // Print raw homogeneous coordinates (x,y,z,w)
+        printf("Projected vertex %d → (%.3f, %.3f, %.3f, %.3f)\n", i, projected.x, projected.y, projected.z, projected.w);
     }
 
     return 0;

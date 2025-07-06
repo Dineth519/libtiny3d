@@ -7,17 +7,25 @@
 // =======================
 
 typedef struct {
-    float x, y, z;          // Cartesian coordinates
-    float r, theta, phi;    // Spherical coordinates
-    bool cartesian_valid, spherical_valid;    // Check cartesian and spherical data valid?
+    float x, y, z;                  // Cartesian coordinates
+    float r, theta, phi;            // Spherical coordinates
+    bool cartesian_valid, spherical_valid;
 } vec3;
+
+// =======================
+// 4D Vector Struct
+// =======================
+typedef struct {
+    float x, y, z, w;
+} vec4;
 
 // =======================
 // 4x4 Matrix Struct
 // =======================
 
 typedef struct {
-    float m[16]; // column-major order
+    // Stored in column-major order
+    float m[16];
 } mat4;
 
 // =======================
@@ -26,6 +34,7 @@ typedef struct {
 
 vec3 vec3_from_cartesian(float x, float y, float z);
 vec3 vec3_from_spherical(float r, float theta, float phi);
+vec4 vec4_from_vec3(vec3 v, float w);
 
 // =======================
 // Vector Setters
@@ -51,8 +60,10 @@ float vec3_dot(vec3 a, vec3 b);
 vec3 vec3_cross(vec3 a, vec3 b);
 float vec3_length(vec3 v);
 vec3 vec3_normalize_fast(vec3 v);
+vec3 vec3_normalize(vec3 v);
 vec3 vec3_slerp(vec3 a, vec3 b, float t);
 vec3 vec3_scale(vec3 v, float s);
+vec3 vec3_from_vec4(vec4 v);
 
 // =======================
 // Matrix Operations
@@ -66,7 +77,7 @@ mat4 mat4_rotate_y(float angle);
 mat4 mat4_rotate_z(float angle);
 mat4 mat4_rotate_xyz(float rx, float ry, float rz);
 mat4 mat4_perspective(float l, float r, float b, float t, float n, float f);
-vec3 mat4_mul_vec3(mat4 m, vec3 v);
+vec4 mat4_mul_vec4(mat4 m, vec4 v);
 mat4 mat4_mul(mat4 a, mat4 b);
 
 #endif

@@ -3,37 +3,65 @@
 # =====================================================
 CC = gcc
 CFLAGS = -Wall -Iinclude
+AR = ar
+ARFLAGS = rcs
 LDFLAGS = -lm
 
 # =====================================================
 # Folders
 # =====================================================
 SRC_DIR = src
-DEMO_DIR = demo
+OBJ_DIR = build/obj
+BUILD_DIR = build
+BIN_DIR = build/demo
 
 # =====================================================
-# Source files
+# Library
 # =====================================================
-# Change 'main_file' to the main program you want to compile
-MAIN_FILE = combined_main.c
+LIB_OBJS = $(OBJ_DIR)/canvas.o \
+           $(OBJ_DIR)/math3d.o \
+           $(OBJ_DIR)/renderer.o \
+           $(OBJ_DIR)/animation.o \
+           $(OBJ_DIR)/lighting.o
 
-SRCS = $(SRC_DIR)/canvas.c \
-       $(SRC_DIR)/math3d.c \
-       $(SRC_DIR)/renderer.c \
-       $(DEMO_DIR)/$(MAIN_FILE)
+LIB = $(BUILD_DIR)/libtiny3d.a
 
 # =====================================================
-# Output binary
+# Executables
 # =====================================================
-TARGET = demo_combined
+CLOCK_TARGET = $(BIN_DIR)/clock_face
+SOCCER_TARGET = $(BIN_DIR)/soccer_ball
 
 # =====================================================
 # Build rules
 # =====================================================
-all: $(TARGET)
+all: $(LIB) $(CLOCK_TARGET) $(SOCCER_TARGET)
 
-$(TARGET): $(SRCS)
-	$(CC) $(CFLAGS) -o $(TARGET) $(SRCS) $(LDFLAGS)
+# Ensure directories exist
+$(OBJ_DIR):
+	mkdir -p $(OBJ_DIR)
 
+$(BIN_DIR):
+	mkdir -p $(BIN_DIR)
+
+# Compile .c to .o inside build/obj/
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+# Build static library in build/, then clean obj/
+$(LIB): $(LIB_OBJS)
+	$(AR) $(ARFLAGS) $@ $^
+	rm -rf $(OBJ_DIR)
+
+# Link clock_face into build/demo/
+$(CLOCK_TARGET): demo/main.c $(LIB) | $(BIN_DIR)
+	$(CC) $(CFLAGS) -o $@ $< -L$(BUILD_DIR) -ltiny3d $(LDFLAGS)
+
+# Link soccer_ball into build/demo/
+$(SOCCER_TARGET): demo/main1.c $(LIB) | $(BIN_DIR)
+	$(CC) $(CFLAGS) -o $@ $< -L$(BUILD_DIR) -ltiny3d $(LDFLAGS)
+
+# Clean everything except build folders
 clean:
-	rm -f $(TARGET)
+	rm -f $(BUILD_DIR)/libtiny3d.a $(CLOCK_TARGET) $(SOCCER_TARGET)
+
