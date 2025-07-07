@@ -190,7 +190,7 @@ int main() {
 
         // Save each frame as a PGM image
         char filename[64];
-        snprintf(filename, sizeof(filename), "frame_%03d.pgm", frame);
+        snprintf(filename, sizeof(filename), "../../tests/visual_tests/frame_%03d.pgm", frame);
         canvas_save_pgm(canvas, filename);
 
         printf("Saved frame %d/%d\n", frame + 1, NUM_FRAMES);
@@ -203,7 +203,7 @@ int main() {
     }
     canvas_destroy(canvas);
 
-    printf("Done. Rendered frames are in the current directory.\n");
+    printf("Done. Rendered frames are in the tests/visual_tests directory.\n");
 
     return 0;
 }

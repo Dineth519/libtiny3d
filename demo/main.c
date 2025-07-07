@@ -36,8 +36,8 @@ int main() {
     }
 
     // Draw the clock face outline as pgm
-    canvas_save_pgm(clock_canvas, "clockface.pgm");
-    printf("Saved clockface.pgm\n");
+    canvas_save_pgm(clock_canvas, "../../tests/visual_tests/clockface.pgm");
+    printf("Saved clockface.pgm in tests/visual_tests directory\n");
     canvas_destroy(clock_canvas);
 
     return 0;

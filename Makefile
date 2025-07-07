@@ -11,18 +11,18 @@ LDFLAGS = -lm
 # Folders
 # =====================================================
 SRC_DIR = src
-OBJ_DIR = build/obj
 BUILD_DIR = build
 BIN_DIR = build/demo
+VISUAL_DIR = tests/visual_tests
 
 # =====================================================
-# Library
+# Source files
 # =====================================================
-LIB_OBJS = $(OBJ_DIR)/canvas.o \
-           $(OBJ_DIR)/math3d.o \
-           $(OBJ_DIR)/renderer.o \
-           $(OBJ_DIR)/animation.o \
-           $(OBJ_DIR)/lighting.o
+LIB_SOURCES = $(SRC_DIR)/canvas.c \
+              $(SRC_DIR)/math3d.c \
+              $(SRC_DIR)/renderer.c \
+              $(SRC_DIR)/animation.c \
+              $(SRC_DIR)/lighting.c
 
 LIB = $(BUILD_DIR)/libtiny3d.a
 
@@ -33,35 +33,50 @@ CLOCK_TARGET = $(BIN_DIR)/clock_face
 SOCCER_TARGET = $(BIN_DIR)/soccer_ball
 
 # =====================================================
-# Build rules
+# Build all
 # =====================================================
-all: $(LIB) $(CLOCK_TARGET) $(SOCCER_TARGET)
+all: $(LIB) $(CLOCK_TARGET) $(SOCCER_TARGET) | $(VISUAL_DIR)
 
+# =====================================================
 # Ensure directories exist
-$(OBJ_DIR):
-	mkdir -p $(OBJ_DIR)
+# =====================================================
+$(BUILD_DIR):
+	mkdir -p $(BUILD_DIR)
 
 $(BIN_DIR):
 	mkdir -p $(BIN_DIR)
 
-# Compile .c to .o inside build/obj/
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
-	$(CC) $(CFLAGS) -c $< -o $@
+$(VISUAL_DIR):
+	mkdir -p $(VISUAL_DIR)
 
-# Build static library in build/, then clean obj/
-$(LIB): $(LIB_OBJS)
-	$(AR) $(ARFLAGS) $@ $^
-	rm -rf $(OBJ_DIR)
+# =====================================================
+# Build static library without leaving .o files
+# =====================================================
+$(LIB): | $(BUILD_DIR)
+	$(CC) $(CFLAGS) -c $(LIB_SOURCES)
+	$(AR) $(ARFLAGS) $@ *.o
+	rm -f *.o
 
-# Link clock_face into build/demo/
+# =====================================================
+# Build executables
+# =====================================================
 $(CLOCK_TARGET): demo/main.c $(LIB) | $(BIN_DIR)
 	$(CC) $(CFLAGS) -o $@ $< -L$(BUILD_DIR) -ltiny3d $(LDFLAGS)
 
-# Link soccer_ball into build/demo/
 $(SOCCER_TARGET): demo/main1.c $(LIB) | $(BIN_DIR)
 	$(CC) $(CFLAGS) -o $@ $< -L$(BUILD_DIR) -ltiny3d $(LDFLAGS)
 
-# Clean everything except build folders
+# =====================================================
+# Run examples
+# =====================================================
+run: all
+	@echo "Running clock_face..."
+	@$(CLOCK_TARGET) $(VISUAL_DIR)
+	@echo "Running soccer_ball..."
+	@$(SOCCER_TARGET) $(VISUAL_DIR)
+
+# =====================================================
+# Clean
+# =====================================================
 clean:
 	rm -f $(BUILD_DIR)/libtiny3d.a $(CLOCK_TARGET) $(SOCCER_TARGET)
-
